@@ -1,0 +1,89 @@
+<html>
+  <head>
+    <!-- 
+    /*
+     * The following <script>, and the code contained within, is covered 
+     * under the MIT license, which in this case will supercede the 
+     * originally declared license.
+     * 
+     * Portions Copyright (c) 2010 Eli Grey
+     * Portions Copyright (c) 2013 Ian Serlin
+     * Portions Copyright (c) 2015 Kevin Kabatra
+     *
+     * Permission is hereby granted, free of charge, to any person 
+     * obtaining a copy of this software and associated documentation files
+     * (the "Software"), to deal in the Software without restriction, 
+     * including without limitation the rights to use, copy, modify, merge,
+     * publish, distribute, sublicense, and/or sell copies of the Software,
+     * and to permit persons to whom the Software is furnished to do so,
+     * subject to the following conditions:
+     * 
+     * The above copyright notice and this permission notice shall be
+     * included in all copies or substantial portions of the Software.
+     * 
+     * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+     * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+     * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
+     * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+     * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+     * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+     * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+     * SOFTWARE.
+     */
+    -->
+    <script>
+        function watch(mTarget, mProp, mHandler) {
+            var mOldValue = mTarget[mProp],
+                mNewValue = mOldValue,
+                mSelf = this,
+                getter = function () {
+                    return mNewValue;
+                },
+                setter = function (val) {
+                    if (Object.prototype.toString.call(val) === 
+                            '[object Array]') {
+                        val = _extendArray(val, mHandler, mSelf);
+                    }
+                    mOldValue = mNewValue;
+                    mNewValue = val;
+                    mHandler.call(mTarget, mProp, mOldValue, val);
+                };
+            if (delete mTarget[mProp]) { // can't watch constants
+                if (Object.defineProperty) { // ECMAScript 5
+                    Object.defineProperty(mTarget, mProp, {
+                        get: getter,
+                        set: setter,
+                        enumerable: false,
+                        configurable: true
+                    });
+                } else if (Object.prototype.__defineGetter__ 
+                        && Object.prototype.__defineSetter__) { // legacy
+                    Object.prototype.__defineGetter__.call(mTarget, mProp,
+                            getter);
+                    Object.prototype.__defineSetter__.call(mTarget, mProp,
+                            setter);
+                }
+            }
+            return this;
+        };
+
+        function unwatch(mTarget, mProp) {
+            var val = mTarget[mProp];
+            delete mTarget[mProp]; // remove accessors
+            mTarget[mProp] = val;
+            return this;
+        };
+
+        var data = {
+            variable1: 0,
+            variable2: 0
+        }
+        , watcher = function(propertyName, oldValue, newValue){
+            //do something when variable is changed
+        };
+
+        watch(data, 'variable1', watcher);
+        watch(data, 'variable2', watcher);
+    </script>
+  </head>
+</html>
